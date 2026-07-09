@@ -1,0 +1,44 @@
+# Hermes user profile — drives discovery source selection and AI ranking.
+# Edit freely; changes take effect on the next `python -m hermes rank`.
+
+identity:
+  role: Engineering student, software developer, startup founder
+  location:
+    city: Navi Mumbai
+    state: Maharashtra
+    country: India
+  currency: INR
+
+interests:
+  - AI tools and API credits
+  - cloud credits and startup programs
+  - developer tools and programs
+  - hackathons and competitions
+  - scholarships, fellowships, grants
+  - GitHub Student Developer Pack additions
+  - beta / early access programs
+  - certification vouchers and free courses
+  - productivity software
+  - hardware deals (laptops, peripherals)
+
+anti_interests:          # down-weighted in ranking
+  - gaming deals
+  - fashion
+  - fast food offers
+
+stack:                   # brands/tools you actually use — boosts matching offers
+  - GitHub
+  - VS Code
+  - Claude / Anthropic
+  - Flutter
+  - Supabase
+  - Python
+  - Next.js
+
+payments:                # used by the (v2) payment optimizer
+  upi: true
+  cards: []              # e.g. "HDFC Millennia credit", "SBI debit"
+
+student:
+  is_student: true
+  has_github_student_pack: true
