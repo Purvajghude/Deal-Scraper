@@ -9,6 +9,7 @@ import httpx
 from ..models import RawOpportunity
 from .base import HEADERS, Source
 from .dealsheaven import DealsHeaven
+from .devpost import Devpost
 from .govt import GovtSchemes
 from .hackernews import HackerNews
 from .reddit import Reddit
@@ -17,6 +18,7 @@ from .studentoffers import StudentOffers
 
 REGISTRY: list[Source] = [
     HackerNews(), Reddit(), RSS(), StudentOffers(), DealsHeaven(), GovtSchemes(),
+    Devpost(),
 ]
 
 

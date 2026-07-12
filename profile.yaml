@@ -42,3 +42,13 @@ payments:                # used by the (v2) payment optimizer
 student:
   is_student: true
   has_github_student_pack: true
+
+notifications:
+  # Telegram alerts for high-urgency finds. Leave blank to disable.
+  # 1. Message @BotFather on Telegram -> /newbot -> copy the token here
+  # 2. Message @userinfobot -> copy your numeric id as chat_id
+  # 3. Send your new bot any message once (bots can't message you first)
+  telegram:
+    bot_token: ""
+    chat_id: ""
+  min_urgency: high        # critical | high | medium | low

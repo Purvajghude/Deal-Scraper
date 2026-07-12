@@ -1,0 +1,27 @@
+#hermes-panel {
+  position: fixed; bottom: 18px; right: 18px; z-index: 2147483000;
+  width: 290px; background: #fff; color: #1c2733;
+  border: 1.5px solid #1c2733; border-radius: 10px;
+  font: 13px/1.45 system-ui, sans-serif;
+  box-shadow: 0 8px 28px rgba(15, 25, 35, .18); padding: 12px 14px;
+}
+#hermes-panel .h-head {
+  font-weight: 900; letter-spacing: .5px; font-size: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 2px solid #1c2733; padding-bottom: 6px; margin-bottom: 8px;
+}
+#hermes-panel .h-close { border: 0; background: none; cursor: pointer; font-size: 13px; color: #5c6b7a; }
+#hermes-panel .h-title { font-weight: 600; margin-bottom: 2px; }
+#hermes-panel .h-price { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+#hermes-panel .h-watch {
+  width: 100%; border: 1.5px solid #1c2733; background: #f3f5f0; border-radius: 6px;
+  padding: 7px; font-weight: 600; cursor: pointer;
+}
+#hermes-panel .h-watch:hover { background: #1c2733; color: #fff; }
+#hermes-panel .h-note { color: #2d8a5c; font-size: 12px; margin-top: 5px; min-height: 1em; }
+#hermes-panel .h-sec {
+  margin-top: 9px; padding-top: 7px; border-top: 1px solid #dce2d6;
+  color: #5c6b7a; font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
+}
+#hermes-panel .h-match { display: block; color: #1878b8; margin-top: 5px; text-decoration: none; }
+#hermes-panel .h-match:hover { text-decoration: underline; }

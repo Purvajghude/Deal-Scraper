@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Hermes Assistant",
+  "version": "0.1.0",
+  "description": "Price history, watchlist, and matching student/AI offers from your local Hermes — right on the product page.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Hermes Assistant"
+  },
+  "host_permissions": ["http://127.0.0.1:8787/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.amazon.in/*", "https://www.flipkart.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
