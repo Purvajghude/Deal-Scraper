@@ -1,0 +1,14 @@
+services:
+  hermes:
+    build: .
+    ports:
+      - "8787:8787"
+    volumes:
+      - hermes-data:/data
+      - ./profile.yaml:/app/profile.yaml:ro
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    restart: unless-stopped
+
+volumes:
+  hermes-data:
