@@ -3,5 +3,6 @@ __pycache__/
 .venv/
 venv/
 hermes.db
+finance.db
 *.db-journal
 .env

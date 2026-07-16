@@ -53,8 +53,17 @@ async def _run_pipeline() -> None:
                 _state["last_errors"] = errors
 
                 _state["stage"] = "ranking"
-                _, scorer = await asyncio.to_thread(rank_all, con)
-                _state["last_scorer"] = scorer
+
+                def _rank_in_thread() -> str:
+                    # sqlite connections are thread-bound — open a fresh one here
+                    tcon = db.connect()
+                    try:
+                        _, scorer = rank_all(tcon)
+                        return scorer
+                    finally:
+                        tcon.close()
+
+                _state["last_scorer"] = await asyncio.to_thread(_rank_in_thread)
 
                 _state["stage"] = "notifying"
                 _state["last_notified"] = await notify_new(con)

@@ -1,53 +1,70 @@
-# Project Hermes — Freebie Register
+# Project Hermes + Ledger
 
-> **Mission: never again miss a valuable freebie on the internet.**
+Two self-hosted apps in one repo:
 
-Hermes is a self-hosted board that continuously pulls **freebies and opportunities**
-from across the internet — free AI API credits, student offers, government schemes
-and yojanas, Indian shopping deals, free courses, hackathons, dev programs, betas —
-and arranges everything **neatly, category-wise**, on one dashboard.
+- **Hermes** — an AI-powered opportunity-intelligence platform that continuously
+  discovers, ranks, and presents freebies (AI credits, student offers, govt
+  yojanas, Indian deals, hackathons, courses…) on one command-center dashboard,
+  with Telegram alerts, price tracking, and a browser assistant. India-first.
+- **Ledger** — a personal finance tracker with a beautiful dashboard for your
+  income, expenses, budgets, and six-month cash flow.
 
-No AI ranking, no notification spam, no setup ceremony. Just the data, organized.
+---
 
-## Run it
+## Hermes — Opportunity Intelligence
 
 ```powershell
 pip install -r requirements.txt
-python -m hermes serve
+python -m hermes serve          # http://127.0.0.1:8787
 ```
 
-Open **http://127.0.0.1:8787**. That's it — the server refreshes all sources on
-startup and again every 6 hours by itself. The "Refresh sources" button pulls
-on demand.
+The server runs the whole pipeline on startup and every 6 hours by itself:
 
-## What it watches
+```
+discover (7 sources) → dedupe → rank (Claude or heuristic) → notify (Telegram) → price-check
+```
 
-| Category | Sources |
+**Full feature set (v0.3):**
+
+| Feature | What it does |
 |---|---|
-| 🤖 AI & API credits | Hacker News (free API / open-weights / credits queries), Hugging Face blog, r/LocalLLaMA |
-| 🎓 Student offers | **studentoffers.co** full verified catalog (~550 offers), GitHub blog |
-| 🏛️ Govt schemes & yojanas | PIB (Press Information Bureau) releases, filtered for schemes/scholarships/benefits (Hindi + English), r/scholarships |
-| 🛒 Deals & shopping | dealsheaven.in (Indian deals, bank offers), r/FREE, r/eFreebies, r/dealsforindia |
-| 🍔 Food & dining | keyword-routed from deal sources (McD/KFC/Swiggy/Zomato/…) |
-| 📚 Free courses | r/udemyfreebies, freeCodeCamp |
-| 🏆 Hackathons | dev.to #hackathon, r/hackathon, HN |
-| ☁️ Dev programs & cloud | GitHub blog, dev.to #opensource, HN free-tier/credits |
-| 🧪 Beta & early access | Product Hunt, HN Show/early-access |
+| **Discovery** | 7 sources: Hacker News, Reddit (RSS), curated RSS (HuggingFace, ProductHunt, GitHub, dev.to, freeCodeCamp), studentoffers.co catalog (~550 offers), dealsheaven.in, PIB govt schemes, Devpost hackathons |
+| **Categories** | 9 auto-assigned by keyword rules: AI credits · student offers · govt schemes · deals · food · courses · hackathons · dev programs · betas |
+| **AI ranking** | `claude-opus-4-8` scores relevance/legitimacy/value/effort/eligibility/urgency when `ANTHROPIC_API_KEY` is set; deterministic heuristic fallback otherwise. Toggle "smart" sort on the dashboard. |
+| **Command center** | Stats strip (live count, new-24h, ranked, price alerts, value realized), category tabs, instant search, ✓ redeemed / ✕ dismiss with a learning loop |
+| **Price intelligence** | Watch any product URL → records price every cycle → **BUY / GOOD / WAIT** verdict vs recorded median/low, with sparklines (Price watch tab) |
+| **Telegram alerts** | High-urgency finds pushed to your phone (configure in `profile.yaml`; silent no-op until then) |
+| **Browser assistant** | `extension/` — MV3 extension: price-watch button + matching offers overlay on Amazon.in / Flipkart product pages, plus a search popup. Load unpacked, pointed at the local API. |
+| **Docker** | `docker compose up` — containerized, self-hosting, data in a named volume |
 
-Adding a source = one file in `hermes/sources/` + one registry line.
-Categories are assigned by deterministic keyword rules in `hermes/categorize.py`.
+Personalize via [`profile.yaml`](profile.yaml). Adding a source = one file in
+`hermes/sources/` + one registry line.
 
-## Other commands
+Other commands: `python -m hermes discover|digest|rank`, `python -m hermes mark <id> dismissed`.
+
+---
+
+## Ledger — Personal Finance Tracker
 
 ```powershell
-python -m hermes discover            # one manual pull
-python -m hermes digest              # category-wise digest in the terminal
-python -m hermes mark <id> dismissed # hide an item forever (✕ on the dashboard does the same)
-python -m hermes rank                # optional AI scoring (needs ANTHROPIC_API_KEY) — off by default
+python -m finance seed          # optional: load sample data to explore
+python -m finance serve         # http://127.0.0.1:8899
 ```
 
-## Design docs
+- **Track** income and expenses with category, payment method, note, and date —
+  fast inline entry.
+- **See** your net for the month, six-month cash-flow chart, and where the money
+  went (category breakdown with real ₹ labels).
+- **Budget** per category with progress bars that flag over-spending.
+- **Navigate** month by month.
 
-Full architecture, competitive research, and the longer-term roadmap (price
-intelligence, browser assistant, notifications) live in
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Those layers stay dormant until wanted.
+Beautiful "evening ledger" design — deep green paper, serif numerals, hairline
+rules. Chart colors are accessibility-validated (colorblind-safe on the dark
+surface). Data lives in `finance.db`; nothing leaves your machine.
+
+---
+
+## Architecture & design
+
+Full competitive research, system design, database schema, AI pipeline, and the
+milestone roadmap for both apps: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

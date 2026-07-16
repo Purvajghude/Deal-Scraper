@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "hermes", "serve", "8787"],
       "port": 8787
+    },
+    {
+      "name": "ledger",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "finance", "serve", "8899"],
+      "port": 8899
     }
   ]
 }

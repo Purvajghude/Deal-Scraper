@@ -2,15 +2,11 @@
 
 *Founding architecture document. Last updated: 2026-07-09.*
 
-> **Product pivot (2026-07-09, owner decision):** Hermes v0.2 is a **simple,
-> category-wise freebie register** — breadth of sources + a clean dashboard,
-> nothing else in the loop. AI ranking (`hermes/rank.py`) still exists but is
-> optional and off by default; Telegram/notification plumbing, price history,
-> and the browser extension are **deferred, not deleted** — the designs below
-> remain the reference for when they're wanted. What shipped instead of
-> M2–M6-as-planned: six live sources across nine categories (incl. govt
-> schemes via PIB and the studentoffers.co catalog), a deterministic keyword
-> categorizer, and a self-refreshing dashboard (6-hour cycle + manual button).
+> **Build history:**
+> - **v0.1 (2026-07-09):** M1 MVP — sources → dedupe → AI/heuristic ranking → digest + dashboard.
+> - **v0.2 (2026-07-09):** owner asked to simplify to a category-wise freebie register; AI ranking made optional, notifications/price/extension deferred.
+> - **v0.3 (2026-07-12, current):** owner reversed course — **full build, all features on**. The self-running pipeline now does discover → rank (Claude when `ANTHROPIC_API_KEY` present, heuristic otherwise) → notify (Telegram) → price-check, every 6 hours. Added: Devpost source (7 sources total), Telegram alerts (`hermes/notify.py`), price-intelligence watchlist with buy/wait verdicts + sparklines (`hermes/prices.py`), a command-center dashboard (stats strip, smart-sort, redeem tracking, price-watch tab), an MV3 **browser extension** (`extension/`), and **Docker/Compose** packaging.
+> - A separate **Ledger** app (`finance/`) was also built — personal finance tracker, see §7.
 
 ---
 
@@ -211,3 +207,31 @@ multi-user or worker concurrency demands it.
 | **M4 — Deep sources** | Devfolio/Unstop/MLH, Product Hunt, GitHub Student Pack watcher, govt portals (AICTE, Startup India, MeitY), newsletter ingestion | ≥15 sources; coverage audit shows <10% missed-opportunity rate vs manual checking |
 | **M5 — Browser assistant** | MV3 extension: price overlay on Amazon.in/Flipkart, student-plan detection on SaaS pricing pages | Extension published (self-install), talks to local API |
 | **M6 — Command center** | Next.js dashboard: money saved/earned, credits obtained, deadlines board, opportunity score; Docker Compose; Postgres option | Dashboard replaces FastAPI stub; one-command deploy |
+
+**Status (v0.3):** M2–M6 shipped in Python/vanilla form (Telegram alerts, price
+watchlist, 7 sources incl. Devpost, MV3 extension, command-center dashboard,
+Docker). A `watchlist` table was added for price intelligence (`url`, `label`,
+`target_price`); `price_history.product_key` references `watchlist.id`. The
+Next.js/Postgres rewrite (M6's stretch form) remains future work — the vanilla
+FastAPI dashboard is the current command center.
+
+## 7. Ledger — personal finance tracker (separate app, `finance/`)
+
+A standalone self-hosted expense/income tracker, unrelated to Hermes discovery
+(shares only the SQLite + FastAPI + vanilla-JS pattern). Own DB (`finance.db`),
+own port (8899).
+
+- **Schema:** `transactions` (amount, kind income/expense, category, note,
+  method upi/card/cash/netbanking, occurred_on, created_at) + `budgets`
+  (category → monthly_limit).
+- **API:** `/api/meta`, `/api/summary` (totals + by-category + 6-month trend +
+  budgets-with-spent), `/api/transactions` CRUD, `/api/budgets` upsert.
+- **UI:** "evening ledger" identity — deep green-charcoal paper, Instrument
+  Serif numerals, hairline rules. Hand-rolled SVG charts (income-vs-expense
+  6-month bars, category breakdown with direct value labels), month navigator,
+  budget progress bars with over-budget flags (text + ▲ icon, never color
+  alone), inline add-transaction row. Chart palette validated against the
+  dataviz six-checks on the dark surface (`#131A17`): income `#2E9C87`,
+  expense `#C25B3F`.
+- **Run:** `python -m finance seed` (sample data) then `python -m finance serve`
+  → http://127.0.0.1:8899.
