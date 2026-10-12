@@ -115,6 +115,8 @@ nav::-webkit-scrollbar{display:none}
 
 <nav id="tabs" aria-label="Categories"></nav>
 <div class="count-line" id="countline"></div>
+<style>.readonly .rowbtns,.readonly .addwatch,.readonly #watchlist button{display:none}</style>
+<details style="margin:12px 0"><summary>Discovery coverage &amp; source health</summary><p>Coupons and deals are leads; check eligibility, expiry, and the code at checkout. Coverage depends on public sources and configured searches.</p><div id="sourcehealth">Waiting for discovery…</div></details>
 <div id="watchpanel" hidden>
   <form class="addwatch" onsubmit="addWatch(event)">
     <input class="u" id="w-url" type="url" required placeholder="Product URL (amazon.in, flipkart…)">
@@ -138,6 +140,11 @@ const esc = s => (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;",
 
 async function loadStatus() {
   const s = await (await fetch("/api/status")).json();
+  document.getElementById("refreshBtn").hidden = s.read_only;
+  document.querySelector('.addwatch').hidden = s.read_only;
+  document.body.classList.toggle('readonly', s.read_only);
+  const coverage = await (await fetch('/api/sources')).json();
+  document.getElementById('sourcehealth').innerHTML = Object.entries(coverage.sources).map(([name, info]) => `<p>${esc(name)} · ${esc(info.status)} · ${info.count} results${info.detail ? ' · ' + esc(info.detail) : ''}</p>`).join('') || 'First discovery is running…';
   document.getElementById("subline").textContent =
     `FREEBIE REGISTER · ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}`;
   const chip = document.getElementById("newchip");
@@ -286,5 +293,6 @@ async function doRefresh() {
 }
 
 (async () => { await loadStatus(); await loadTabs(); await loadList(); })();
+setInterval(async () => { await loadStatus(); await loadTabs(); if (state.view === 'register') await loadList(); }, 15000);
 </script>
 </div></body></html>"""

@@ -22,9 +22,13 @@ class RSS(Source):
 
     async def fetch(self, client: httpx.AsyncClient) -> list[RawOpportunity]:
         out: list[RawOpportunity] = []
+        self.errors = {}
         for url, (category, region) in FEEDS.items():
-            r = await client.get(url)
-            if r.status_code != 200:
+            try:
+                r = await client.get(url)
+                r.raise_for_status()
+            except httpx.HTTPError as exc:
+                self.errors[url] = str(exc)
                 continue
             feed = feedparser.parse(r.text)
             for entry in feed.entries[:15]:

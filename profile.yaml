@@ -39,6 +39,19 @@ payments:                # used by the (v2) payment optimizer
   upi: true
   cards: []              # e.g. "HDFC Millennia credit", "SBI debit"
 
+discovery:
+  # Four additional public deal/coupon feeds are enabled by default.
+  # Override with coupon_feeds: [{name: My Feed, url: https://example.com/feed, region: india}]
+  # Web search is enabled only when BRAVE_SEARCH_API_KEY is set on the server.
+  search_pages: 1        # 1–3 pages per query; API usage may incur charges
+  coupon_queries:
+    - India coupon promo code shopping
+    - India food delivery coupon code
+    - software developer coupon promo code
+    - student discount coupon
+    - cloud AI credits free offer
+    - shopping coupon promo code
+
 student:
   is_student: true
   has_github_student_pack: true

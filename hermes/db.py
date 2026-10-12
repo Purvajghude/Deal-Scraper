@@ -56,6 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_scores_composite ON scores(composite);
 
 
 def connect() -> sqlite3.Connection:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(DB_PATH)
     con.row_factory = sqlite3.Row
     con.executescript(SCHEMA)

@@ -40,6 +40,59 @@ discover (7 sources) → dedupe → rank (Claude or heuristic) → notify (Teleg
 Personalize via [`profile.yaml`](profile.yaml). Adding a source = one file in
 `hermes/sources/` + one registry line.
 
+### Online deployment
+
+Deploy this repository to Railway using the included `Dockerfile` and
+`railway.toml`. Create a persistent volume mounted at `/data` **before exposing
+the service**, then generate a Railway public domain. Run one replica: SQLite
+and the six-hour discovery scheduler are designed for a single process.
+The container listens on `0.0.0.0` and uses Railway's `PORT`; `/health` checks
+that the database is available without waiting for internet discovery.
+A Railway account with an active plan is required.
+
+The deployed dashboard defaults to **public read-only**. Visitors can browse
+and search; refresh, redeem, dismiss, and price-watch edits are blocked.
+Discovery still runs automatically on startup and every six hours. To use
+the personal controls online, set both `HERMES_USERNAME` and `HERMES_PASSWORD`
+and set `HERMES_PUBLIC_READ_ONLY=0`. This password protects the whole app;
+there are no separate user accounts. Keep HTTPS enabled. Local Python runs
+and Docker Compose retain personal controls by default.
+
+Environment variables:
+
+| Variable | Purpose |
+|---|---|
+| `HERMES_DB` | SQLite file, `/data/hermes.db` in Docker; mount a persistent volume |
+| `PORT`, `HOST` | Hosting port and listen address; supplied automatically in Docker/Railway |
+| `HERMES_PUBLIC_READ_ONLY` | `1` protects the public instance against visitor edits |
+| `HERMES_USERNAME`, `HERMES_PASSWORD` | Optional password protection for the whole dashboard |
+| `BRAVE_SEARCH_API_KEY` | Enables broader coupon discovery through Brave's search index |
+| `HERMES_CORS_ORIGINS` | Optional comma-separated allowed extension/browser origins |
+
+### Coupon coverage
+
+In addition to the original seven sources, Hermes checks Slickdeals, OzBargain,
+r/coupons, and r/freebies feeds. Each feed fails independently. The dashboard's
+**Discovery coverage & source health** panel shows counts, failures, and whether
+internet search is configured. Some sources block cloud servers; failures are
+reported and the remaining sources keep working.
+
+Set `BRAVE_SEARCH_API_KEY` to enable six configurable searches for shopping,
+food, software, student discounts, and AI/cloud offers. Configure queries,
+pages (1–3), and additional publisher RSS feeds under `discovery` in
+`profile.yaml`. The default search budget is six API requests per cycle;
+pagination increases it. See [Brave's official search documentation](https://api-dashboard.search.brave.com/app/documentation/web-search/get-started).
+
+Results preserve source links and descriptions (including codes when publishers
+provide them). They are **discovery leads**, not checkout-verified coupons.
+An index or feed cannot cover the entire internet, private/app-only offers, or
+prove that a code works for a particular account. Check expiry, region,
+eligibility, and checkout before relying on an offer. Older collected offers
+remain listed until dismissed/expired; automatic expiry verification is not
+implemented. Only add sources you have permission to syndicate.
+
+Validation: `python -m unittest discover -s tests -v`.
+
 Other commands: `python -m hermes discover|digest|rank`, `python -m hermes mark <id> dismissed`.
 
 ---

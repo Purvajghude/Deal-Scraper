@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 
 # Windows consoles default to cp1252, which can't print ₹ — force UTF-8.
@@ -57,7 +58,7 @@ def cmd_digest() -> None:
 def cmd_serve(port: int = 8787) -> None:
     import uvicorn
 
-    uvicorn.run("hermes.api:app", host="127.0.0.1", port=port)
+    uvicorn.run("hermes.api:app", host=os.getenv("HOST", "127.0.0.1"), port=port)
 
 
 def cmd_mark(opp_id: int, action: str) -> None:
@@ -84,7 +85,7 @@ def main() -> None:
     elif cmd == "digest":
         cmd_digest()
     elif cmd == "serve":
-        cmd_serve(int(args[1]) if len(args) > 1 else 8787)
+        cmd_serve(int(args[1]) if len(args) > 1 else int(os.getenv("PORT", "8787")))
     elif cmd == "mark" and len(args) >= 3:
         cmd_mark(int(args[1]), args[2])
     else:

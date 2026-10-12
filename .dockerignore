@@ -1,0 +1,10 @@
+.git
+.vscode
+.venv
+venv
+__pycache__
+*.db
+*.db-*
+.env*
+tests
+finance

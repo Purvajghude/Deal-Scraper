@@ -13,12 +13,15 @@ config -> no alerts; empty watchlist -> skip. The dashboard works regardless.
 from __future__ import annotations
 
 import asyncio
+import base64
+import os
+import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from . import db, prices
@@ -90,14 +93,62 @@ async def _loop() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    con = db.connect()
+    con.close()
     task = asyncio.create_task(_loop())
-    yield
-    task.cancel()
+    try:
+        yield
+    finally:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(title="Hermes", version="0.3.0", lifespan=lifespan)
 # The browser extension (chrome-extension:// origin) talks to this local API.
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=os.getenv("HERMES_CORS_ORIGINS", "").split(",") if os.getenv("HERMES_CORS_ORIGINS") else [], allow_methods=["GET", "POST", "DELETE"], allow_headers=["Content-Type", "Authorization"])
+
+
+def read_only() -> bool:
+    return os.getenv("HERMES_PUBLIC_READ_ONLY", "0") == "1"
+
+
+@app.middleware("http")
+async def access_control(request, call_next):
+    username = os.getenv("HERMES_USERNAME", "")
+    password = os.getenv("HERMES_PASSWORD", "")
+    if request.url.path != "/health":
+        if username or password:
+            valid = False
+            try:
+                scheme, token = request.headers.get("authorization", "").split(" ", 1)
+                user, secret = base64.b64decode(token, validate=True).decode().split(":", 1)
+                valid = scheme.lower() == "basic" and bool(username and password) and secrets.compare_digest(user.encode(), username.encode()) and secrets.compare_digest(secret.encode(), password.encode())
+            except (ValueError, UnicodeError):
+                pass
+            if not valid:
+                return JSONResponse({"detail": "Sign in to Hermes"}, status_code=401, headers={"WWW-Authenticate": 'Basic realm="Hermes"'})
+        if read_only() and request.method not in ("GET", "HEAD", "OPTIONS"):
+            return JSONResponse({"detail": "This public dashboard is read-only. Discovery refreshes automatically."}, status_code=403)
+    return await call_next(request)
+
+
+@app.get("/health")
+def health():
+    con = db.connect()
+    try:
+        con.execute("SELECT 1").fetchone()
+        return {"status": "ok"}
+    finally:
+        con.close()
+
+
+@app.get("/api/sources")
+def api_sources():
+    from .sources import SOURCE_STATUS
+    return {"sources": SOURCE_STATUS, "coverage": "Public feeds and configured search queries; coupons are not checkout-verified."}
 
 
 # ── opportunities ────────────────────────────────────────────────────────────
@@ -232,6 +283,7 @@ def api_status():
             " JOIN opportunities o ON o.id = s.opportunity_id WHERE o.status = 'redeemed'"
         ).fetchone()["v"]
         return {
+            "read_only": read_only(),
             "total": total, "new_24h": db.new_since(con, day_ago),
             "ranked": ranked, "value_realized_inr": redeemed_value,
             "refresh": _state,

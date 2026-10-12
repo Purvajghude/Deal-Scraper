@@ -8,6 +8,7 @@ services:
       - ./profile.yaml:/app/profile.yaml:ro
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - HERMES_PUBLIC_READ_ONLY=0
     restart: unless-stopped
 
 volumes:
